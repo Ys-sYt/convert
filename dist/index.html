@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>test</title>
+        <style>
+            body { margin: 0; padding: 0; }
+            #map { position: absolute; top: 30px; bottom: 0; width: 100%; }
+        </style>
+
+    
+      <script type="module" crossorigin src="/assets/index-414b5886.js"></script>
+      <link rel="stylesheet" href="/assets/index-33b9db6d.css">
+    </head>
+    <body style="margin: 0">
+        <style>
+            #file {
+                position: absolute;
+                top: 0;
+                left: 0;
+                /* z-index: 10; */
+            }
+        </style>
+        
+        <div id="map"></div>
+        <input type="file" id="file-input" accept=".kml">
+
+        
+<!--         <script type="module">
+            import { kml } from "https://unpkg.com/@tmcw/togeojson?module";
+          
+            fetch("sample.kml")
+              .then(function (response) {
+                return response.text();
+              })
+              .then(function (xml) {
+                console.log(kml(new DOMParser().parseFromString(xml, "text/xml")));
+              });
+          </script> -->
+    </body>
+</html>
