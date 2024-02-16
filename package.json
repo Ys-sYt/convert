@@ -1,0 +1,20 @@
+{
+  "name": "test",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^4.4.5"
+  },
+  "dependencies": {
+    "@mapbox/togeojson": "^0.16.2",
+    "@tmcw/togeojson": "^5.8.1",
+    "maplibre-gl": "^4.0.0",
+    "xmldom": "^0.6.0"
+  }
+}
