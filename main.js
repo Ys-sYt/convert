@@ -8,7 +8,7 @@ import { DOMParser } from 'xmldom';
 import toGeoJSON from '@mapbox/togeojson';
 import fs from 'fs';
 
-import { kml } from "@tmcw/togeojson";
+//import { kml } from "@tmcw/togeojson";
 import { gpx } from "@tmcw/togeojson";
 
 
@@ -55,10 +55,11 @@ document.getElementById('file-input').addEventListener('change', function(event)
             const text = e.target.result;
 
             //違うアプローチ
-            const geojson = (kml(new DOMParser().parseFromString(text)));
+            //const geojson = (kml(new DOMParser().parseFromString(text)));
+            const geojson = (gpx(new DOMParser().parseFromString(text)));
             console.log(geojson);
 
-            //ここでソースに追加
+            //ここでソースに追加, マルチポイントとして描画されている。
             map.addSource('kml', {
                 type: 'geojson',
                 data: geojson
@@ -77,7 +78,7 @@ document.getElementById('file-input').addEventListener('change', function(event)
             const coordinates = geojson.features[0].geometry.coordinates;
             console.log(coordinates);
 
-            
+            //では、点データとして読み込むのではなくラインデータとして読み込みたい。      
 
 
         };
