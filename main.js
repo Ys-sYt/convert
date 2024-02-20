@@ -43,8 +43,6 @@ const map = new maplibregl.Map({
     }
 });
 
-
-
 // ファイルアップロードのためのinput要素のイベントリスナーを設定
 document.getElementById('file-input').addEventListener('change', function(event) {
     const file = event.target.files[0];
@@ -60,14 +58,14 @@ document.getElementById('file-input').addEventListener('change', function(event)
             console.log(geojson);
 
             //ここでソースに追加, マルチポイントとして描画されている。
-            map.addSource('kml', {
+            map.addSource('gpx', {
                 type: 'geojson',
                 data: geojson
             });
             map.addLayer({
                 id: 'kml-layer',
                 type: 'line',
-                source: 'kml',
+                source: 'gpx',
                 layout: {},
                 paint: {
                     'line-color': '#ff0000',
@@ -78,8 +76,19 @@ document.getElementById('file-input').addEventListener('change', function(event)
             const coordinates = geojson.features[0].geometry.coordinates;
             console.log(coordinates);
 
-            //では、点データとして読み込むのではなくラインデータとして読み込みたい。      
-
+            //KMLでは点データとして読み込み。ラインとして描画可能。 
+            //geojsonではラインデータとして読み込み。
+            //時間データも含まれている。座標を取得し、時間の差と合わせて移動距離を計算？
+            
+            //https://maplibre.org/maplibre-gl-js/docs/examples/zoomto-linestring/
+            //ラインのboundsにズーム
+            
+            const bounds = coordinates.reduce((bounds, coord) => {
+                return bounds.extend(coord);
+            }, new maplibregl.LngLatBounds(coordinates[0], coordinates[0]));
+            map.fitBounds(bounds, {
+                padding: 20
+            });
 
         };
         reader.readAsText(file);
