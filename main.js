@@ -98,3 +98,7 @@ document.getElementById('file-input').addEventListener('change', function(event)
 
 });
 
+//メモ・将来やること
+//garminの心拍数とか読み取り？
+//地図読み込んで
+
