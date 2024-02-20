@@ -43,6 +43,24 @@ const map = new maplibregl.Map({
     }
 });
 
+//chatGPT, 読み込みファイル削除関数
+function removeExistingData(map) {
+    // レイヤーIDとソースIDが分かっている場合
+    const layerId = "gpx-layer"; // 以前に追加したレイヤーのID
+    const sourceId = "gpx"; // 以前に追加したソースのID（レイヤーと同じIDを使っている場合）
+
+    // レイヤーの存在を確認して削除
+    if (map.getLayer(layerId)) {
+        map.removeLayer(layerId);
+    }
+
+    // ソースの存在を確認して削除
+    if (map.getSource(sourceId)) {
+        map.removeSource(sourceId);
+    }
+}
+
+
 // ファイルアップロードのためのinput要素のイベントリスナーを設定
 document.getElementById('file-input').addEventListener('change', function(event) {
     const file = event.target.files[0];
@@ -52,6 +70,9 @@ document.getElementById('file-input').addEventListener('change', function(event)
         reader.onload = function(e) {
             const text = e.target.result;
 
+            // 既存のデータを削除
+            removeExistingData(map);
+            
             //違うアプローチ
             //const geojson = (kml(new DOMParser().parseFromString(text)));
             const geojson = (gpx(new DOMParser().parseFromString(text)));
@@ -63,7 +84,7 @@ document.getElementById('file-input').addEventListener('change', function(event)
                 data: geojson
             });
             map.addLayer({
-                id: 'kml-layer',
+                id: 'gpx-layer',
                 type: 'line',
                 source: 'gpx',
                 layout: {},
