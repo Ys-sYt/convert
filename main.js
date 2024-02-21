@@ -11,15 +11,22 @@ import fs from 'fs';
 //import { kml } from "@tmcw/togeojson";
 import { gpx } from "@tmcw/togeojson";
 
+const mapimgCoord = [
+    [139.8276436, 36.7659966],
+    [139.8499857, 36.7683691],
+    [139.8520458, 36.7557454],
+    [139.82969458, 36.75335628],  
+]
 
 const map = new maplibregl.Map({
     container: 'map', // div要素のid
-    zoom: 5, // 初期表示のズーム
-    center: [21.13, 55.70], // 初期表示の中心
+    zoom: 14,
+    center: [139.8381, 36.7607],
     //minZoom: 5, // 最小ズーム
     maxZoom: 18, // 最大ズーム
     //maxBounds: [122, 20, 154, 50], // 表示可能な範囲
-    style: {
+    bearing: -8,
+        style: {
         version: 8,
         sources: {
             // 背景地図ソース
@@ -31,6 +38,11 @@ const map = new maplibregl.Map({
                 attribution:
                     '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             },
+            mapimg: {
+                type: 'image',
+                url: './map.jpg',
+                coordinates: mapimgCoord,
+            } 
         },
         layers: [
             // 背景地図レイヤー
@@ -38,6 +50,14 @@ const map = new maplibregl.Map({
                 id: 'osm-layer',
                 source: 'osm',
                 type: 'raster',
+            },
+            {
+                'id': 'mapimg',
+                'type': 'raster',
+                'source': 'mapimg',
+                'paint': {
+                    'raster-opacity': 0.7,
+                }
             },
         ],
     }
