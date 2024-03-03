@@ -18,6 +18,8 @@ const mapimgCoord = [
     [139.82969458, 36.75335628],  
 ]
 
+const bearing = -7;
+
 const map = new maplibregl.Map({
     container: 'map', // div要素のid
     zoom: 14,
@@ -25,7 +27,7 @@ const map = new maplibregl.Map({
     //minZoom: 5, // 最小ズーム
     maxZoom: 18, // 最大ズーム
     //maxBounds: [122, 20, 154, 50], // 表示可能な範囲
-    bearing: -8,
+    bearing: bearing,
         style: {
         version: 8,
         sources: {
@@ -130,6 +132,8 @@ document.getElementById('file-input').addEventListener('change', function(event)
             map.fitBounds(bounds, {
                 padding: 20
             });
+
+            map.setBearing(bearing);
 
         };
         reader.readAsText(file);
