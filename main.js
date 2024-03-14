@@ -5,8 +5,8 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 //import tj from '@mapbox/togeojson';
 import { DOMParser } from 'xmldom';
 
-import toGeoJSON from '@mapbox/togeojson';
-import fs from 'fs';
+//import toGeoJSON from '@mapbox/togeojson';
+//import fs from 'fs';
 
 //import { kml } from "@tmcw/togeojson";
 import { gpx } from "@tmcw/togeojson";
@@ -84,6 +84,7 @@ function removeExistingData(map) {
 
 
 // ファイルアップロードのためのinput要素のイベントリスナーを設定
+// geojson生成
 document.getElementById('file-input').addEventListener('change', function(event) {
     const file = event.target.files[0];
     
@@ -117,7 +118,8 @@ document.getElementById('file-input').addEventListener('change', function(event)
             });
 
             const coordinates = geojson.features[0].geometry.coordinates;
-            console.log(coordinates);
+            //console.log(coordinates);
+
 
             //KMLでは点データとして読み込み。ラインとして描画可能。 
             //geojsonではラインデータとして読み込み。
@@ -125,23 +127,30 @@ document.getElementById('file-input').addEventListener('change', function(event)
             
             //https://maplibre.org/maplibre-gl-js/docs/examples/zoomto-linestring/
             //ラインのboundsにズーム
+            //buildしないと無理？
             
             const bounds = coordinates.reduce((bounds, coord) => {
                 return bounds.extend(coord);
             }, new maplibregl.LngLatBounds(coordinates[0], coordinates[0]));
+
             map.fitBounds(bounds, {
                 padding: 20
             });
 
+            console.log(bounds);
             map.setBearing(bearing);
 
         };
         reader.readAsText(file);
+
+
         
     }
 
 
 });
+
+
 
 //メモ・将来やること
 //garminの心拍数とか読み取り？
