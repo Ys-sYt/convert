@@ -11,6 +11,10 @@ import { DOMParser } from 'xmldom';
 //import { kml } from "@tmcw/togeojson";
 import { gpx } from "@tmcw/togeojson";
 
+//import length from '@turf/length';
+import { point } from '@turf/helpers';
+import distance from '@turf/distance';
+
 const mapimgCoord = [
     [139.8276436, 36.7659966],
     [139.8499857, 36.7683691],
@@ -83,6 +87,10 @@ function removeExistingData(map) {
 }
 
 
+let geojson;
+//let totalLength; 
+
+
 // ファイルアップロードのためのinput要素のイベントリスナーを設定
 // geojson生成
 document.getElementById('file-input').addEventListener('change', function(event) {
@@ -98,36 +106,112 @@ document.getElementById('file-input').addEventListener('change', function(event)
             
             //違うアプローチ
             //const geojson = (kml(new DOMParser().parseFromString(text)));
-            const geojson = (gpx(new DOMParser().parseFromString(text)));
+            geojson = (gpx(new DOMParser().parseFromString(text))); //featurecollectionとして読み込み
             console.log(geojson);
+            //featureにするためにフィルタリング
+            geojson = geojson.features[0];
+            //console.log(geojson);
 
-            //ここでソースに追加, マルチポイントとして描画されている。
+            //↑ではだめで、lineストリングを各セクションでfeatureとして保存、そこに諸々の情報を書き込む必要あり。
+
+            //座標のみ抽出
+            const coordinates = geojson.geometry.coordinates;
+            const timeList = geojson.properties.coordinateProperties.times;
+            const heartRate = geojson.properties.coordinateProperties["ns3:TrackPointExtensions"];
+            const timeDif = [];
+            //console.log(heartRate);
+            
+            
+            //ペース(min/km)の配列を作成
+            const pace = []; 
+
+            for (let i = 0; i < coordinates.length - 1; i++) {
+                const startPoint = point(coordinates[i]);
+                const endPoint = point(coordinates[i+1]);
+
+                const dis = distance(startPoint, endPoint, {units: 'kilometers'});
+
+                const startTime = new Date(timeList[i]);
+                const endTime = new Date(timeList[i+1]);
+                const timedif = (endTime - startTime)/1000; //ミリ秒を秒に変換
+                //console.log(timedif);
+                const minPerKilo = (timedif / 60) / dis;
+
+                timeDif.push(timedif);
+                pace.push(minPerKilo);
+            };
+
+            //戦略：繰り返し
+            //からのgeojson作り、そこにforループで追加していく
+            //propertyには, pace, time, timedif, hartRateを追加。
+
+            //カラのgeojson
+            var newGeoJson = {
+                "type": "FeatureCollection",
+                "name": "route",
+                "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+                "features": []
+            };
+
+            for (var i = 0; i < coordinates.length - 1; i++) {
+                var segment = {
+                    "type": "Feature",
+                    "properties": {
+                        "time": timeList[i],
+                        "pace": pace[i], 
+                        "hearRate": heartRate[i],
+                        "timeDif": timeDif[i],          
+                    },
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": [coordinates[i], coordinates[i+1]]
+                    }
+                };
+                newGeoJson.features.push(segment);
+            };
+            //console.log(newGeoJson);
+
+
             map.addSource('gpx', {
                 type: 'geojson',
-                data: geojson
+                data: newGeoJson
             });
+            
             map.addLayer({
                 id: 'gpx-layer',
                 type: 'line',
                 source: 'gpx',
                 layout: {},
                 paint: {
-                    'line-color': '#ff0000',
-                    'line-width': 2
+                    'line-width': 5,
+                    'line-color': [
+                        'interpolate',
+                        ['linear'],
+                        ['get', 'pace'],
+                        0, '#d7191c',
+                        4, '#f79556',
+                        10, '#fdfd57',
+                        15, '#60b856'
+                    ],
+                    'line-opacity': 0.8,
+                },
+                'layout': {
+                    'line-cap': 'square',
+                    //'visibility': 'none',
                 },
             });
 
-            const coordinates = geojson.features[0].geometry.coordinates;
+            
             //console.log(coordinates);
 
 
             //KMLでは点データとして読み込み。ラインとして描画可能。 
             //geojsonではラインデータとして読み込み。
-            //時間データも含まれている。座標を取得し、時間の差と合わせて移動距離を計算？
+            //時間(UTC), 心拍数も含まれている。座標を取得し、時間の差と合わせて移動距離を計算？
             
             //https://maplibre.org/maplibre-gl-js/docs/examples/zoomto-linestring/
             //ラインのboundsにズーム
-            //buildしないと無理？
+            //buildしないとfitしない。
             
             const bounds = coordinates.reduce((bounds, coord) => {
                 return bounds.extend(coord);
@@ -140,15 +224,19 @@ document.getElementById('file-input').addEventListener('change', function(event)
             console.log(bounds);
             map.setBearing(bearing);
 
+            //ここで描画する方法を
+            //totalLength = length(geojson);
+            //console.log(totalLength);
+
         };
         reader.readAsText(file);
 
-
+        //document.getElementById("dis").textContent = dis;
         
     }
-
-
 });
+
+
 
 
 

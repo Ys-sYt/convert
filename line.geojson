@@ -1,0 +1,43 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "properties": {
+          "_gpxType": "trk",
+          "name": "塩谷町 ラン",
+          "type": "running",
+          "time": "2023-03-12T04:57:43.000Z",
+          "coordinateProperties": {
+            "times": [
+              "2023-03-12T04:57:43.000Z",
+              ...
+            ],
+            "ns3:TrackPointExtensions": [
+              121,
+              ...
+            ]
+          },
+          "pace": [
+            80.43389865715477,
+           ...
+          ],
+          "heartRate": [
+            121,
+            ...
+          ]
+        },
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              139.83797449618578,
+              36.763943284749985,
+              261
+            ],
+           ...
+          ]
+        }
+      }
+    ]
+  }
