@@ -14,6 +14,7 @@ import { gpx } from "@tmcw/togeojson";
 //import length from '@turf/length';
 import { point } from '@turf/helpers';
 import distance from '@turf/distance';
+import  buffer  from '@turf/buffer';
 
 const mapimgCoord = [
     [139.8276436, 36.7659966],
@@ -107,7 +108,7 @@ document.getElementById('file-input').addEventListener('change', function(event)
             //違うアプローチ
             //const geojson = (kml(new DOMParser().parseFromString(text)));
             geojson = (gpx(new DOMParser().parseFromString(text))); //featurecollectionとして読み込み
-            console.log(geojson);
+            //console.log(geojson);
             //featureにするためにフィルタリング
             geojson = geojson.features[0];
             //console.log(geojson);
@@ -176,38 +177,75 @@ document.getElementById('file-input').addEventListener('change', function(event)
                 type: 'geojson',
                 data: newGeoJson
             });
+
+            map.addSource('outline', {
+                type: 'geojson',
+                data: geojson
+            });
+
+            //test - outline
+            map.addLayer({
+                id: 'outline',
+                type: 'line',
+                source: 'outline',
+                layout:{},
+                paint: {
+                    'line-width': 3,
+                    'line-color': 'black',
+                    'line-opacity':0.6,
+                    'line-gap-width': 5
+                }
+            })
             
             map.addLayer({
                 id: 'gpx-layer',
                 type: 'line',
                 source: 'gpx',
-                layout: {},
+                layout: {
+                    'line-join': 'round',
+                },
                 paint: {
                     'line-width': 5,
                     'line-color': [
                         'interpolate',
                         ['linear'],
                         ['get', 'pace'],
-                        0, '#d7191c',
-                        4, '#f79556',
-                        10, '#fdfd57',
-                        15, '#60b856'
+                        //0, '#d7191c',
+                        3, 'rgba(0, 128, 0, 0.5)',
+                        10, 'rgba(255, 255, 0, 0.5)',
+                        15, 'rgba(255, 0, 0, 0.5)',
                     ],
                     'line-opacity': 0.8,
+                    //'line-gap-width': 5
                 },
                 'layout': {
                     'line-cap': 'square',
                     //'visibility': 'none',
+                    'line-join': 'bevel',
+
                 },
             });
 
-            
-            //console.log(coordinates);
+            /* //turfでbufferを生成。アウトラインを塗る。
+            var outline = buffer(geojson, 0.001, {units: 'kilometers'});
+            console.log(outline);
+
+            map.addLayer({
+                'id': 'buffer-layer',
+                'type': 'fill',
+                'source': {
+                    'type': 'geojson',
+                    'data': outline
+                },
+                'paint': {
+                    'fill-color': 'white',
+                    'fill-opacity': 1,
+                    'fill-outline-color': 'black',
+                }
+            }); */
 
 
-            //KMLでは点データとして読み込み。ラインとして描画可能。 
-            //geojsonではラインデータとして読み込み。
-            //時間(UTC), 心拍数も含まれている。座標を取得し、時間の差と合わせて移動距離を計算？
+
             
             //https://maplibre.org/maplibre-gl-js/docs/examples/zoomto-linestring/
             //ラインのboundsにズーム
@@ -234,6 +272,8 @@ document.getElementById('file-input').addEventListener('change', function(event)
         //document.getElementById("dis").textContent = dis;
         
     }
+
+
 });
 
 
