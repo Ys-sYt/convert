@@ -73,8 +73,8 @@ const map = new maplibregl.Map({
 //chatGPT, 読み込みファイル削除関数
 function removeExistingData(map) {
     // レイヤーIDとソースIDが分かっている場合
-    const layerId = "gpx-layer"; // 以前に追加したレイヤーのID
-    const sourceId = "gpx"; // 以前に追加したソースのID（レイヤーと同じIDを使っている場合）
+    const layerId = ["route", "outline"]; // 以前に追加したレイヤーのID
+    const sourceId = ["gpx", "outline"]; // 以前に追加したソースのID
 
     // レイヤーの存在を確認して削除
     if (map.getLayer(layerId)) {
@@ -85,6 +85,10 @@ function removeExistingData(map) {
     if (map.getSource(sourceId)) {
         map.removeSource(sourceId);
     }
+
+    //生成したgeojsonも削除する。
+    //delete geojson;
+
 }
 
 
@@ -198,7 +202,7 @@ document.getElementById('file-input').addEventListener('change', function(event)
             })
             
             map.addLayer({
-                id: 'gpx-layer',
+                id: 'route',
                 type: 'line',
                 source: 'gpx',
                 layout: {
