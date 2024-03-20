@@ -14,7 +14,7 @@ import { gpx } from "@tmcw/togeojson";
 //import length from '@turf/length';
 import { point } from '@turf/helpers';
 import distance from '@turf/distance';
-import  buffer  from '@turf/buffer';
+//import  buffer  from '@turf/buffer';
 
 const mapimgCoord = [
     [139.8276436, 36.7659966],
@@ -129,6 +129,7 @@ document.getElementById('file-input').addEventListener('change', function(event)
             const heartRate = geojson.properties.coordinateProperties["ns3:TrackPointExtensions"];
             const timeDif = [];
             //console.log(heartRate);
+            console.log(coordinates);
             
             
             //ペース(min/km)の配列を作成
@@ -227,7 +228,7 @@ document.getElementById('file-input').addEventListener('change', function(event)
                     //'line-gap-width': 5
                 },
                 'layout': {
-                    'line-cap': 'square',
+                    'line-cap': 'butt', // featureの寄せ集めなので、これが接続部。butが一番違和感ない
                     //'visibility': 'none',
                     'line-join': 'bevel',
 
@@ -256,7 +257,8 @@ document.getElementById('file-input').addEventListener('change', function(event)
             //https://maplibre.org/maplibre-gl-js/docs/examples/zoomto-linestring/
             //ラインのboundsにズーム
             //buildしないとfitしない。
-            
+            //fitさせる必要も無いような気がしてきた。
+/*             
             const bounds = coordinates.reduce((bounds, coord) => {
                 return bounds.extend(coord);
             }, new maplibregl.LngLatBounds(coordinates[0], coordinates[0]));
@@ -264,9 +266,9 @@ document.getElementById('file-input').addEventListener('change', function(event)
             map.fitBounds(bounds, {
                 padding: 20
             });
-
+ */
             //console.log(bounds);
-            map.setBearing(bearing);
+            
 
             //ここで描画する方法を
             //totalLength = length(geojson);
