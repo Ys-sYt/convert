@@ -73,18 +73,22 @@ const map = new maplibregl.Map({
 //chatGPT, 読み込みファイル削除関数
 function removeExistingData(map) {
     // レイヤーIDとソースIDが分かっている場合
-    const layerId = ["route", "outline"]; // 以前に追加したレイヤーのID
-    const sourceId = ["gpx", "outline"]; // 以前に追加したソースのID
+    const layerId = ['route', 'outline']; // 以前に追加したレイヤーのID
+    const sourceId = ['gpx', 'outline']; // 以前に追加したソースのID
 
     // レイヤーの存在を確認して削除
-    if (map.getLayer(layerId)) {
-        map.removeLayer(layerId);
-    }
+    layerId.forEach(id => {
+        if (map.getLayer(id)) {
+            map.removeLayer(id);
+        }
+    });
 
     // ソースの存在を確認して削除
-    if (map.getSource(sourceId)) {
-        map.removeSource(sourceId);
-    }
+    sourceId.forEach(id => {
+        if (map.getSource(id)) {
+            map.removeSource(id);
+        }
+    });
 
     //生成したgeojsonも削除する。
     //delete geojson;
@@ -231,6 +235,7 @@ document.getElementById('file-input').addEventListener('change', function(event)
             });
 
             /* //turfでbufferを生成。アウトラインを塗る。
+            //line-gap-widthで対応可能だった。
             var outline = buffer(geojson, 0.001, {units: 'kilometers'});
             console.log(outline);
 
@@ -248,9 +253,6 @@ document.getElementById('file-input').addEventListener('change', function(event)
                 }
             }); */
 
-
-
-            
             //https://maplibre.org/maplibre-gl-js/docs/examples/zoomto-linestring/
             //ラインのboundsにズーム
             //buildしないとfitしない。
@@ -263,7 +265,7 @@ document.getElementById('file-input').addEventListener('change', function(event)
                 padding: 20
             });
 
-            console.log(bounds);
+            //console.log(bounds);
             map.setBearing(bearing);
 
             //ここで描画する方法を
@@ -279,12 +281,3 @@ document.getElementById('file-input').addEventListener('change', function(event)
 
 
 });
-
-
-
-
-
-//メモ・将来やること
-//garminの心拍数とか読み取り？
-//地図読み込んで
-
