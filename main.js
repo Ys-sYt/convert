@@ -37,13 +37,18 @@ const map = new maplibregl.Map({
         version: 8,
         sources: {
             // 背景地図ソース
-            osm: {
+            mierune_base: {
                 type: 'raster',
-                tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-                maxzoom: 19,
-                tileSize: 256,
+                tiles: ['https://api.maptiler.com/maps/jp-mierune-gray/{z}/{x}/{y}.png?key=Oh6R8jzq3P80WGrClSBG'],
+                tileSize: 512,
                 attribution:
-                    '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                    '<a href="https://maptiler.jp/" target="_blank">&copy; MIERUNE</a> <a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>',
+            },
+            hillshade:{
+                type: 'raster',
+                tiles: ['https://cyberjapandata.gsi.go.jp/xyz/hillshademap/{z}/{x}/{y}.png'],
+                attribution:
+                '<a href="https://maps.gsi.go.jp/development/ichiran.html#hillshademap" target="_blank">&copy; 国土地理院</a>'
             },
             mapimg: {
                 type: 'image',
@@ -54,8 +59,8 @@ const map = new maplibregl.Map({
         layers: [
             // 背景地図レイヤー
             {
-                id: 'osm-layer',
-                source: 'osm',
+                id: 'base',
+                source: 'mierune_base',
                 type: 'raster',
             },
             {
@@ -63,7 +68,15 @@ const map = new maplibregl.Map({
                 'type': 'raster',
                 'source': 'mapimg',
                 'paint': {
-                    'raster-opacity': 0.7,
+                    'raster-opacity': 1,
+                }
+            },
+            {
+                id: 'hillshade',
+                source: 'hillshade',
+                type: 'raster',
+                'paint': {
+                    "raster-opacity": 0.2
                 }
             },
         ],
@@ -129,7 +142,7 @@ document.getElementById('file-input').addEventListener('change', function(event)
             const heartRate = geojson.properties.coordinateProperties["ns3:TrackPointExtensions"];
             const timeDif = [];
             //console.log(heartRate);
-            console.log(coordinates);
+            //console.log(coordinates);
             
             
             //ペース(min/km)の配列を作成
@@ -199,7 +212,7 @@ document.getElementById('file-input').addEventListener('change', function(event)
                 source: 'outline',
                 layout:{},
                 paint: {
-                    'line-width': 3,
+                    'line-width': 1,
                     'line-color': 'black',
                     'line-opacity':0.6,
                     'line-gap-width': 5
@@ -220,39 +233,21 @@ document.getElementById('file-input').addEventListener('change', function(event)
                         ['linear'],
                         ['get', 'pace'],
                         //0, '#d7191c',
-                        3, 'rgba(0, 128, 0, 0.5)',
-                        10, 'rgba(255, 255, 0, 0.5)',
-                        15, 'rgba(255, 0, 0, 0.5)',
+                        3, 'rgb(0, 128, 0)',
+                        10, 'rgb(255, 255, 0)',
+                        15, 'rgb(255, 0, 0)',
                     ],
-                    'line-opacity': 0.8,
+                    'line-opacity': 0.5,
                     //'line-gap-width': 5
                 },
                 'layout': {
-                    'line-cap': 'butt', // featureの寄せ集めなので、これが接続部。butが一番違和感ない
+                    'line-cap': 'butt', // featureの寄せ集めなので、これが接続部。buttが一番違和感ない. round, squire
                     //'visibility': 'none',
-                    'line-join': 'bevel',
+                    'line-round-limit': 5,
+                    'line-join': 'miter',
 
                 },
             });
-
-            /* //turfでbufferを生成。アウトラインを塗る。
-            //line-gap-widthで対応可能だった。
-            var outline = buffer(geojson, 0.001, {units: 'kilometers'});
-            console.log(outline);
-
-            map.addLayer({
-                'id': 'buffer-layer',
-                'type': 'fill',
-                'source': {
-                    'type': 'geojson',
-                    'data': outline
-                },
-                'paint': {
-                    'fill-color': 'white',
-                    'fill-opacity': 1,
-                    'fill-outline-color': 'black',
-                }
-            }); */
 
             //https://maplibre.org/maplibre-gl-js/docs/examples/zoomto-linestring/
             //ラインのboundsにズーム
@@ -268,12 +263,6 @@ document.getElementById('file-input').addEventListener('change', function(event)
             });
  */
             //console.log(bounds);
-            
-
-            //ここで描画する方法を
-            //totalLength = length(geojson);
-            //console.log(totalLength);
-
         };
         reader.readAsText(file);
 
@@ -282,4 +271,22 @@ document.getElementById('file-input').addEventListener('change', function(event)
     }
 
 
+});
+
+//スライドバーが動いたらその値にする。
+const routeOpacity = document.getElementById('sliderLineOpacity');
+routeOpacity.addEventListener('input', function(){
+    let routeOpacityFloat = parseFloat(routeOpacity.value);
+	//console.log(routeOpacity.value);
+    map.setPaintProperty('route', 'line-opacity', routeOpacityFloat);
+    map.setPaintProperty('outline', 'line-opacity', routeOpacityFloat);
+});
+
+const routewidth = document.getElementById('sliderLinewidth');
+routewidth.addEventListener('input', function(){
+    let routeWidthFloat = parseFloat(routewidth.value);
+	//console.log(routewidth.value);
+    map.setPaintProperty('route', 'line-width', routeWidthFloat);
+    map.setPaintProperty('outline', 'line-gap-width', routeWidthFloat);
+    //map.setPaintProperty('outline', 'line-opacity', routeOpacityFloat);
 });

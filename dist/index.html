@@ -6,32 +6,60 @@
         <title>test</title>
         <style>
             body { margin: 0; padding: 0; }
-            #map { position: absolute; top: 30px; bottom: 0; width: 100%;}
+            html, body, #map { height: 100%; }
         </style>
 
     
-      <script type="module" crossorigin src="./assets/index-14a72b9e.js"></script>
+      <script type="module" crossorigin src="./assets/index-845b3733.js"></script>
       <link rel="stylesheet" href="./assets/index-d02d2a94.css">
     </head>
     <body style="margin: 0">
         <style>
-            #file {
+            .map-overlay {
+                font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
                 position: absolute;
+                width: 25%;
                 top: 0;
                 left: 0;
-                /* z-index: 10; */
+                padding: 10px;
             }
 
-            .dis {
-                position: absolute;
-                top: 10px;
-                left: 10px;
-                
+            .map-overlay .map-overlay-inner {
+                background-color: #fff;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+                border-radius: 3px;
+                padding: 10px;
+                margin-bottom: 10px;
             }
+
+            .map-overlay h2 {
+                line-height: 24px;
+                display: block;
+                margin: 0 0 10px;
+            }
+
         </style>
         
         <div id="map"></div>
-        <input type="file" id="file-input" accept=".gpx">
+        <div class="map-overlay top">
+            <div class="map-overlay-inner">
+                <h2>軌跡データ選択</h2>
+                <input type="file" id="file-input" accept=".gpx">
+            </div>
+
+            <div class="map-overlay-inner">
+                <h2>軌跡の透明度</h2>
+                <label id="month"></label>
+                <input id="sliderLineOpacity" type="range" min="0" max="1" step="0.05" value="0.8"/>
+            </div>
+
+            <div class="map-overlay-inner">
+                <h2>軌跡の太さ</h2>
+                <label id="month"></label>
+                <input id="sliderLinewidth" type="range" min="1" max="15" step="0.1" value="5"/>
+            </div>
+        
+        </div>
 
         
     </body>
