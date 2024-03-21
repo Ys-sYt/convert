@@ -16,6 +16,16 @@ import { point } from '@turf/helpers';
 import distance from '@turf/distance';
 //import  buffer  from '@turf/buffer';
 
+//import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
+
+//https://qiita.com/shi-works/items/2d712456ccc91320cd1d
+// addProtocolを設定
+//maplibregl.addProtocol('numpng', makeNumPngProtocol());
+
+// Terrain-RGB形式への変換モジュール
+//import { makeNumPngProtocol } from './numPngProtocol.js'
+
+//設定
 const mapimgCoord = [
     [139.8276436, 36.7659966],
     [139.8499857, 36.7683691],
@@ -24,6 +34,8 @@ const mapimgCoord = [
 ]
 
 const bearing = -7;
+
+
 
 const map = new maplibregl.Map({
     container: 'map', // div要素のid
@@ -54,7 +66,7 @@ const map = new maplibregl.Map({
                 type: 'image',
                 url: './map.jpg',
                 coordinates: mapimgCoord,
-            } 
+            },
         },
         layers: [
             // 背景地図レイヤー
@@ -79,6 +91,7 @@ const map = new maplibregl.Map({
                     "raster-opacity": 0.2
                 }
             },
+            
         ],
     }
 });
@@ -290,3 +303,72 @@ routewidth.addEventListener('input', function(){
     map.setPaintProperty('outline', 'line-gap-width', routeWidthFloat);
     //map.setPaintProperty('outline', 'line-opacity', routeOpacityFloat);
 });
+
+//https://qiita.com/shi-works/items/2d712456ccc91320cd1d
+map.on('load', () => {
+    // 標高タイルソース
+    map.addSource("tilezen-dem", {
+        type: 'raster-dem',
+        tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
+        attribution: '<a href="https://github.com/tilezen/joerd/blob/master/docs/attribution.md">Tilezen Joerd: Attribution</a>',
+        encoding: "terrarium"
+    });
+
+    // 標高タイルセット
+    map.setTerrain({ 'source': 'tilezen-dem', 'exaggeration': 1 });
+
+    map.addControl(
+        new maplibregl.TerrainControl({
+            source: 'tilezen-dem',
+            exaggeration: 1,
+            
+        }),
+    );
+
+    // ズーム・回転
+    map.addControl(new maplibregl.NavigationControl());
+
+    // スケール表示
+    map.addControl(new maplibregl.ScaleControl({
+        maxWidth: 200,
+        unit: 'metric'
+    }));
+});
+
+/* map.on('load', () => {
+    // 産総研 シームレス標高タイルソース
+    map.addSource("aist-dem", {
+        type: 'raster-dem',
+        tiles: [
+            'numpng://tiles.gsj.jp/tiles/elev/mixed/{z}/{y}/{x}.png',
+        ],
+        attribution: '<a href="https://tiles.gsj.jp/tiles/elev/tiles.html" target="_blank">産業技術総合研究所 シームレス標高タイル(統合DEM)</a>',
+        tileSize: 256
+    });
+
+    // 産総研 シームレス標高タイルセット
+    map.setTerrain({ 'source': 'aist-dem', 'exaggeration': 7 });
+    map.addControl(
+        new maplibregl.TerrainControl({
+            source: 'aist-dem',
+            exaggeration: 1,
+        })
+    )
+});  */
+
+/* map.on('load', () => {
+    const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
+    map.addSource('terrain', gsiTerrainSource);
+    map.addLayer(
+        {
+            id: 'hillshadev2',
+            source: 'terrain',
+            type: 'hillshade',
+            paint: {
+                'hillshade-illumination-anchor': 'map',
+                'hillshade-exaggeration': 0.2,
+            },
+        },
+        'base',
+    )
+}); */
