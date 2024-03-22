@@ -31,11 +31,9 @@ const mapimgCoord = [
     [139.8499857, 36.7683691],
     [139.8520458, 36.7557454],
     [139.82969458, 36.75335628],  
-]
+];
 
 const bearing = -7;
-
-
 
 const map = new maplibregl.Map({
     container: 'map', // div要素のid
@@ -96,6 +94,7 @@ const map = new maplibregl.Map({
     }
 });
 
+
 //chatGPT, 読み込みファイル削除関数
 function removeExistingData(map) {
     // レイヤーIDとソースIDが分かっている場合
@@ -115,15 +114,10 @@ function removeExistingData(map) {
             map.removeSource(id);
         }
     });
-
-    //生成したgeojsonも削除する。
-    //delete geojson;
-
 }
-
-
 let geojson;
 //let totalLength; 
+let newGeoJson;
 
 
 // ファイルアップロードのためのinput要素のイベントリスナーを設定
@@ -182,7 +176,7 @@ document.getElementById('file-input').addEventListener('change', function(event)
             //propertyには, pace, time, timedif, hartRateを追加。
 
             //カラのgeojson
-            var newGeoJson = {
+            newGeoJson = {
                 "type": "FeatureCollection",
                 "name": "route",
                 "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
@@ -205,7 +199,8 @@ document.getElementById('file-input').addEventListener('change', function(event)
                 };
                 newGeoJson.features.push(segment);
             };
-            //console.log(newGeoJson);
+            console.log(newGeoJson);
+            //console.log(newGeoJson.features[0]);
 
 
             map.addSource('gpx', {
@@ -228,7 +223,7 @@ document.getElementById('file-input').addEventListener('change', function(event)
                     'line-width': 1,
                     'line-color': 'black',
                     'line-opacity':0.6,
-                    'line-gap-width': 5
+                    'line-gap-width': 3,
                 }
             })
             
@@ -236,11 +231,8 @@ document.getElementById('file-input').addEventListener('change', function(event)
                 id: 'route',
                 type: 'line',
                 source: 'gpx',
-                layout: {
-                    'line-join': 'round',
-                },
                 paint: {
-                    'line-width': 5,
+                    'line-width': 3,
                     'line-color': [
                         'interpolate',
                         ['linear'],
@@ -254,11 +246,10 @@ document.getElementById('file-input').addEventListener('change', function(event)
                     //'line-gap-width': 5
                 },
                 'layout': {
-                    'line-cap': 'butt', // featureの寄せ集めなので、これが接続部。buttが一番違和感ない. round, squire
+                    'line-cap': 'butt', // featureの寄せ集めなので、これが接続部。buttが一番違和感ない. round, square
                     //'visibility': 'none',
-                    'line-round-limit': 5,
+                    'line-round-limit': 0.1,
                     'line-join': 'miter',
-
                 },
             });
 
@@ -287,23 +278,26 @@ document.getElementById('file-input').addEventListener('change', function(event)
 });
 
 //スライドバーが動いたらその値にする。
+//透明度
 const routeOpacity = document.getElementById('sliderLineOpacity');
 routeOpacity.addEventListener('input', function(){
     let routeOpacityFloat = parseFloat(routeOpacity.value);
-	//console.log(routeOpacity.value);
+	console.log(routeOpacity.value);
     map.setPaintProperty('route', 'line-opacity', routeOpacityFloat);
     map.setPaintProperty('outline', 'line-opacity', routeOpacityFloat);
 });
 
+//幅
 const routewidth = document.getElementById('sliderLinewidth');
 routewidth.addEventListener('input', function(){
     let routeWidthFloat = parseFloat(routewidth.value);
-	//console.log(routewidth.value);
+	console.log(routewidth.value);
     map.setPaintProperty('route', 'line-width', routeWidthFloat);
     map.setPaintProperty('outline', 'line-gap-width', routeWidthFloat);
     //map.setPaintProperty('outline', 'line-opacity', routeOpacityFloat);
 });
 
+//3Dテレイン&コントロール
 //https://qiita.com/shi-works/items/2d712456ccc91320cd1d
 map.on('load', () => {
     // 標高タイルソース
@@ -335,40 +329,144 @@ map.on('load', () => {
     }));
 });
 
-/* map.on('load', () => {
-    // 産総研 シームレス標高タイルソース
-    map.addSource("aist-dem", {
-        type: 'raster-dem',
-        tiles: [
-            'numpng://tiles.gsj.jp/tiles/elev/mixed/{z}/{y}/{x}.png',
-        ],
-        attribution: '<a href="https://tiles.gsj.jp/tiles/elev/tiles.html" target="_blank">産業技術総合研究所 シームレス標高タイル(統合DEM)</a>',
-        tileSize: 256
+
+//アニメーション機能実装
+
+let timer ;
+const replayButton = document.getElementById('replay');
+let json4animation;
+let outline4animation;
+
+replayButton.addEventListener('click', () => {
+    if (replayButton.innerText === 'Replay') {
+        replayButton.innerText = 'Stop';
+        // Add logic for starting the replay action
+
+        map.setLayoutProperty('route', 'visibility', 'none');
+        map.setLayoutProperty('outline', 'visibility', 'none');
+
+        //アニメーション用json作成
+        json4animation = {
+            "type": "FeatureCollection",
+            "name": "json4animation",
+            "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+            "features": [newGeoJson.features[0]]
+        };
+        //outline
+        outline4animation = {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [geojson.geometry.coordinates[0]],
+            },
+        };
+        console.log(outline4animation);
+
+        //console.log(json4animation);
+
+        map.addSource('outline-anime', {type: 'geojson', data: outline4animation});
+            //test - outline
+        map.addLayer({
+            id: 'outline-anime',
+            type: 'line',
+            source: 'outline-anime',
+            layout:{},
+            paint: {
+                'line-width': 1,
+                'line-color': 'black',
+                'line-opacity':0.6,
+                'line-gap-width': 5,
+            },
+        });
+
+        map.addSource('trace', {type: 'geojson', data: json4animation});
+        map.addLayer({
+            id: 'animation-line',
+            type: 'line',
+            source: 'trace',
+            paint: {
+                'line-width': 5,
+                'line-color': [
+                    'interpolate',
+                    ['linear'],
+                    ['get', 'pace'],
+                    //0, '#d7191c',
+                    3, 'rgb(0, 128, 0)',
+                    10, 'rgb(255, 255, 0)',
+                    15, 'rgb(255, 0, 0)',
+                ],
+                'line-opacity': 0.5,
+                //'line-gap-width': 5
+            },
+            'layout': {
+                'line-cap': 'round', // featureの寄せ集めなので、これが接続部。buttが一番違和感ない. round, squire
+                //'visibility': 'none',
+                'line-round-limit': 5,
+                'line-join': 'miter',
+            },
+        });
+        map.jumpTo({'center': json4animation.features[0].geometry.coordinates[0], 'zoom': 15});
+        map.setPitch(0);
+        console.log(json4animation.features[0].geometry.coordinates[0]);
+        
+        //
+        let i = 0;
+        timer = window.setInterval(() => {
+            if (i < newGeoJson.features.length) {
+                json4animation.features.push(newGeoJson.features[i]);
+                map.getSource('trace').setData(json4animation);
+
+                outline4animation.geometry.coordinates.push(geojson.geometry.coordinates[i]);
+                map.getSource('outline-anime').setData(outline4animation);
+                const head = json4animation.features[i].geometry.coordinates[1];
+                map.panTo(head);
+                console.log(head);
+                //maker表示
+                //marker.setLngLat(head);
+                //marker.addTo(map);
+                i++;
+            } else {
+                window.clearInterval(timer);
+            }
+        }, 100);
+    }  else {
+    replayButton.innerText = 'Replay';
+    // Add logic for stopping the replay action
+    window.clearInterval(timer);
+    //chat gpt
+    // json4animationのデータをクリア
+    json4animation.features = [];
+
+    // outline4animationのデータをクリア
+    outline4animation.geometry.coordinates = [];
+
+    // マップソースを空のデータで更新してクリア
+    map.getSource('trace').setData({
+        type: 'FeatureCollection',
+        features: []
     });
 
-    // 産総研 シームレス標高タイルセット
-    map.setTerrain({ 'source': 'aist-dem', 'exaggeration': 7 });
-    map.addControl(
-        new maplibregl.TerrainControl({
-            source: 'aist-dem',
-            exaggeration: 1,
-        })
-    )
-});  */
+    map.getSource('outline-anime').setData({
+        type: 'Feature',
+        geometry: {
+            type: 'LineString',
+            coordinates: []
+        }
+    });
 
-/* map.on('load', () => {
-    const gsiTerrainSource = useGsiTerrainSource(maplibregl.addProtocol);
-    map.addSource('terrain', gsiTerrainSource);
-    map.addLayer(
-        {
-            id: 'hillshadev2',
-            source: 'terrain',
-            type: 'hillshade',
-            paint: {
-                'hillshade-illumination-anchor': 'map',
-                'hillshade-exaggeration': 0.2,
-            },
-        },
-        'base',
-    )
-}); */
+    map.removeLayer('animation-line');
+    map.removeSource('trace');
+    map.removeLayer('outline-anime');
+    map.removeSource('outline-anime');
+    //map.setLayoutProperty('trace', 'visibility', 'none');
+    //map.jumpTo({'center':  [139.90050, 36.8059], 'zoom': 17});
+    map.setLayoutProperty('route', 'visibility', 'visible');
+    map.setLayoutProperty('outline', 'visibility', 'visible');
+/*            map.fitBounds(bounds, {
+        padding: 20
+    });  */
+    map.setBearing(bearing);
+    //map.setPitch(60);
+};
+
+});

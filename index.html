@@ -36,10 +36,40 @@
                 margin: 0 0 10px;
             }
 
+            .overlay button {
+                font: 600 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+                background-color: #000;
+                color: #fff;
+                display: inline-block;
+                margin: 0;
+                padding: 10px 20px;
+                border: none;
+                cursor: pointer;
+                border-radius: 3px;
+            }
+        
+            .overlay button:hover {
+                background-color: #686b6d;
+            }
+
+            #pause::after {
+            content: 'Pause';
+            }
+
+            #pause.pause::after {
+            content: 'Play';
+            }
+
         </style>
         
         <div id="map"></div>
         <div class="map-overlay top">
+            <div class="map-overlay-inner">
+                <div class="overlay">
+                    <button id="replay">Replay</button>
+                </div>
+            </div>
+
             <div class="map-overlay-inner">
                 <h2>軌跡データ選択</h2>
                 <input type="file" id="file-input" accept=".gpx">
@@ -47,16 +77,13 @@
 
             <div class="map-overlay-inner">
                 <h2>軌跡の透明度</h2>
-                <label id="month"></label>
                 <input id="sliderLineOpacity" type="range" min="0" max="1" step="0.05" value="0.8"/>
             </div>
 
             <div class="map-overlay-inner">
                 <h2>軌跡の太さ</h2>
-                <label id="month"></label>
-                <input id="sliderLinewidth" type="range" min="1" max="15" step="0.1" value="5"/>
+                <input id="sliderLinewidth" type="range" min="1" max="15" step="0.1" value="3"/>
             </div>
-        
         </div>
 
         <script type="module" src="./main.js"></script>
