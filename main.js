@@ -431,7 +431,7 @@ replayButton.addEventListener('click', () => {
         }, 100);
     }  else {
     replayButton.innerText = 'Replay';
-    // Add logic for stopping the replay action
+    
     window.clearInterval(timer);
     //chat gpt
     // json4animationのデータをクリア
