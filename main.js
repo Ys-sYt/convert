@@ -43,7 +43,7 @@ const map = new maplibregl.Map({
     //minZoom: 5, // 最小ズーム
     maxZoom: 18, // 最大ズーム
     //maxBounds: [122, 20, 154, 50], // 表示可能な範囲
-    bearing: bearing,
+    //bearing: bearing,
     style: {
         version: 8,
         sources: {
@@ -95,9 +95,9 @@ const map = new maplibregl.Map({
     }
 });
 
-/* map.on('load', function() {
+map.on('load', function() {
     map.fitBounds(mapimgCoord);
-}); */
+});
 
 
 //chatGPT, 読み込みファイル削除関数
