@@ -14,6 +14,7 @@ import { gpx } from "@tmcw/togeojson";
 //import length from '@turf/length';
 import { point } from '@turf/helpers';
 import distance from '@turf/distance';
+import bearing from '@turf/bearing';
 //import  buffer  from '@turf/buffer';
 
 //import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
@@ -33,17 +34,20 @@ const mapimgCoord = [
     [139.82969458, 36.75335628],  
 ];
 
-const bearing = -7;
+var point1 = point(mapimgCoord[2]);
+var point2 = point(mapimgCoord[1]);
+var turfbearing = bearing(point1, point2)
+
+//const mapbearing = -7;
 
 const map = new maplibregl.Map({
     container: 'map', // div要素のid
-    style: 'https://api.maptiler.com/maps/jp-mierune-gray/style.json?key=Oh6R8jzq3P80WGrClSBG',
     zoom: 14,
     center: [139.8381, 36.7607],
-    //minZoom: 5, // 最小ズーム
+    minZoom: 5, // 最小ズーム
     maxZoom: 18, // 最大ズーム
-    //maxBounds: [122, 20, 154, 50], // 表示可能な範囲
-    //bearing: bearing,
+    maxBounds: [122, 20, 154, 50], // 表示可能な範囲
+    bearing: turfbearing,
     style: {
         version: 8,
         sources: {
@@ -95,9 +99,7 @@ const map = new maplibregl.Map({
     }
 });
 
-map.on('load', function() {
-    map.fitBounds(mapimgCoord);
-});
+
 
 
 //chatGPT, 読み込みファイル削除関数
@@ -332,149 +334,145 @@ map.on('load', () => {
         maxWidth: 200,
         unit: 'metric'
     }));
-});
-
 
 //アニメーション機能実装
 
-let timer ;
-const replayButton = document.getElementById('replay');
-let json4animation;
-let outline4animation;
+    let timer ;
+    const replayButton = document.getElementById('replay');
+    let json4animation;
+    let outline4animation;
 
-replayButton.addEventListener('click', () => {
-    if (replayButton.innerText === 'Replay') {
-        replayButton.innerText = 'Stop';
-        // Add logic for starting the replay action
+    replayButton.addEventListener('click', () => {
+        if (replayButton.innerText === 'Replay') {
+            replayButton.innerText = 'Stop';
+            // Add logic for starting the replay action
 
-        map.setLayoutProperty('route', 'visibility', 'none');
-        map.setLayoutProperty('outline', 'visibility', 'none');
+            map.setLayoutProperty('route', 'visibility', 'none');
+            map.setLayoutProperty('outline', 'visibility', 'none');
 
-        //アニメーション用json作成
-        json4animation = {
-            "type": "FeatureCollection",
-            "name": "json4animation",
-            "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
-            "features": [newGeoJson.features[0]]
+            //アニメーション用json作成
+            json4animation = {
+                "type": "FeatureCollection",
+                "name": "json4animation",
+                "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+                "features": [newGeoJson.features[0]]
+            };
+            //outline
+            outline4animation = {
+                "type": "Feature",
+                "geometry": {
+                    "type": "LineString",
+                    "coordinates": [geojson.geometry.coordinates[0]],
+                },
+            };
+            console.log(outline4animation);
+
+            //console.log(json4animation);
+
+            map.addSource('outline-anime', {type: 'geojson', data: outline4animation});
+                //test - outline
+            map.addLayer({
+                id: 'outline-anime',
+                type: 'line',
+                source: 'outline-anime',
+                layout:{},
+                paint: {
+                    'line-width': 1,
+                    'line-color': 'black',
+                    'line-opacity':0.6,
+                    'line-gap-width': 5,
+                },
+            });
+
+            map.addSource('trace', {type: 'geojson', data: json4animation});
+            map.addLayer({
+                id: 'animation-line',
+                type: 'line',
+                source: 'trace',
+                paint: {
+                    'line-width': 5,
+                    'line-color': [
+                        'interpolate',
+                        ['linear'],
+                        ['get', 'pace'],
+                        //0, '#d7191c',
+                        3, 'rgb(0, 128, 0)',
+                        10, 'rgb(255, 255, 0)',
+                        15, 'rgb(255, 0, 0)',
+                    ],
+                    'line-opacity': 0.5,
+                    //'line-gap-width': 5
+                },
+                'layout': {
+                    'line-cap': 'round', // featureの寄せ集めなので、これが接続部。buttが一番違和感ない. round, squire
+                    //'visibility': 'none',
+                    'line-round-limit': 5,
+                    'line-join': 'miter',
+                },
+            });
+            map.jumpTo({'center': json4animation.features[0].geometry.coordinates[0], 'zoom': 15});
+            map.setPitch(0);
+            console.log(json4animation.features[0].geometry.coordinates[0]);
+            
+            //
+            let i = 0;
+            timer = window.setInterval(() => {
+                if (i < newGeoJson.features.length) {
+                    json4animation.features.push(newGeoJson.features[i]);
+                    map.getSource('trace').setData(json4animation);
+
+                    outline4animation.geometry.coordinates.push(geojson.geometry.coordinates[i]);
+                    map.getSource('outline-anime').setData(outline4animation);
+                    const head = json4animation.features[i].geometry.coordinates[1];
+                    map.panTo(head);
+                    console.log(head);
+                    //maker表示
+                    //marker.setLngLat(head);
+                    //marker.addTo(map);
+                    i++;
+                } else {
+                    window.clearInterval(timer);
+                }
+            }, 100);
+        }  else {
+            replayButton.innerText = 'Replay';
+            
+            window.clearInterval(timer);
+            //chat gpt
+            // json4animationのデータをクリア
+            json4animation.features = [];
+
+            // outline4animationのデータをクリア
+            outline4animation.geometry.coordinates = [];
+
+            // マップソースを空のデータで更新してクリア
+            map.getSource('trace').setData({
+                type: 'FeatureCollection',
+                features: []
+            });
+
+            map.getSource('outline-anime').setData({
+                type: 'Feature',
+                geometry: {
+                    type: 'LineString',
+                    coordinates: []
+                }
+            });
+
+            map.removeLayer('animation-line');
+            map.removeSource('trace');
+            map.removeLayer('outline-anime');
+            map.removeSource('outline-anime');
+            //map.setLayoutProperty('trace', 'visibility', 'none');
+            //map.jumpTo({'center':  [139.90050, 36.8059], 'zoom': 17});
+            map.setLayoutProperty('route', 'visibility', 'visible');
+            map.setLayoutProperty('outline', 'visibility', 'visible');
+        /*            map.fitBounds(bounds, {
+                padding: 20
+            });  */
+            map.setBearing(bearing);
+            //map.setPitch(60);
         };
-        //outline
-        outline4animation = {
-            "type": "Feature",
-            "geometry": {
-                "type": "LineString",
-                "coordinates": [geojson.geometry.coordinates[0]],
-            },
-        };
-        console.log(outline4animation);
-
-        //console.log(json4animation);
-
-        map.addSource('outline-anime', {type: 'geojson', data: outline4animation});
-            //test - outline
-        map.addLayer({
-            id: 'outline-anime',
-            type: 'line',
-            source: 'outline-anime',
-            layout:{},
-            paint: {
-                'line-width': 1,
-                'line-color': 'black',
-                'line-opacity':0.6,
-                'line-gap-width': 5,
-            },
-        });
-
-        map.addSource('trace', {type: 'geojson', data: json4animation});
-        map.addLayer({
-            id: 'animation-line',
-            type: 'line',
-            source: 'trace',
-            paint: {
-                'line-width': 5,
-                'line-color': [
-                    'interpolate',
-                    ['linear'],
-                    ['get', 'pace'],
-                    //0, '#d7191c',
-                    3, 'rgb(0, 128, 0)',
-                    10, 'rgb(255, 255, 0)',
-                    15, 'rgb(255, 0, 0)',
-                ],
-                'line-opacity': 0.5,
-                //'line-gap-width': 5
-            },
-            'layout': {
-                'line-cap': 'round', // featureの寄せ集めなので、これが接続部。buttが一番違和感ない. round, squire
-                //'visibility': 'none',
-                'line-round-limit': 5,
-                'line-join': 'miter',
-            },
-        });
-        map.jumpTo({'center': json4animation.features[0].geometry.coordinates[0], 'zoom': 15});
-        map.setPitch(0);
-        console.log(json4animation.features[0].geometry.coordinates[0]);
-        
-        //
-        let i = 0;
-        timer = window.setInterval(() => {
-            if (i < newGeoJson.features.length) {
-                json4animation.features.push(newGeoJson.features[i]);
-                map.getSource('trace').setData(json4animation);
-
-                outline4animation.geometry.coordinates.push(geojson.geometry.coordinates[i]);
-                map.getSource('outline-anime').setData(outline4animation);
-                const head = json4animation.features[i].geometry.coordinates[1];
-                map.panTo(head);
-                console.log(head);
-                //maker表示
-                //marker.setLngLat(head);
-                //marker.addTo(map);
-                i++;
-            } else {
-                window.clearInterval(timer);
-            }
-        }, 100);
-    }  else {
-    replayButton.innerText = 'Replay';
-    
-    window.clearInterval(timer);
-    //chat gpt
-    // json4animationのデータをクリア
-    json4animation.features = [];
-
-    // outline4animationのデータをクリア
-    outline4animation.geometry.coordinates = [];
-
-    // マップソースを空のデータで更新してクリア
-    map.getSource('trace').setData({
-        type: 'FeatureCollection',
-        features: []
     });
-
-    map.getSource('outline-anime').setData({
-        type: 'Feature',
-        geometry: {
-            type: 'LineString',
-            coordinates: []
-        }
-    });
-
-    map.removeLayer('animation-line');
-    map.removeSource('trace');
-    map.removeLayer('outline-anime');
-    map.removeSource('outline-anime');
-    //map.setLayoutProperty('trace', 'visibility', 'none');
-    //map.jumpTo({'center':  [139.90050, 36.8059], 'zoom': 17});
-    map.setLayoutProperty('route', 'visibility', 'visible');
-    map.setLayoutProperty('outline', 'visibility', 'visible');
-/*            map.fitBounds(bounds, {
-        padding: 20
-    });  */
-    map.setBearing(bearing);
-    //map.setPitch(60);
-};
-
 });
-
-
   
