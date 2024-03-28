@@ -37,13 +37,14 @@ const bearing = -7;
 
 const map = new maplibregl.Map({
     container: 'map', // div要素のid
+    style: 'https://api.maptiler.com/maps/jp-mierune-gray/style.json?key=Oh6R8jzq3P80WGrClSBG',
     zoom: 14,
     center: [139.8381, 36.7607],
     //minZoom: 5, // 最小ズーム
     maxZoom: 18, // 最大ズーム
     //maxBounds: [122, 20, 154, 50], // 表示可能な範囲
     bearing: bearing,
-        style: {
+    style: {
         version: 8,
         sources: {
             // 背景地図ソース
@@ -54,12 +55,12 @@ const map = new maplibregl.Map({
                 attribution:
                     '<a href="https://maptiler.jp/" target="_blank">&copy; MIERUNE</a> <a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>',
             },
-            hillshade:{
+    /*             hillshade:{
                 type: 'raster',
                 tiles: ['https://cyberjapandata.gsi.go.jp/xyz/hillshademap/{z}/{x}/{y}.png'],
                 attribution:
                 '<a href="https://maps.gsi.go.jp/development/ichiran.html#hillshademap" target="_blank">&copy; 国土地理院</a>'
-            },
+            }, */
             mapimg: {
                 type: 'image',
                 url: './map.jpg',
@@ -81,18 +82,22 @@ const map = new maplibregl.Map({
                     'raster-opacity': 1,
                 }
             },
-            {
+    /*             {
                 id: 'hillshade',
                 source: 'hillshade',
                 type: 'raster',
                 'paint': {
                     "raster-opacity": 0.2
                 }
-            },
+            }, */
             
         ],
     }
 });
+
+/* map.on('load', function() {
+    map.fitBounds(mapimgCoord);
+}); */
 
 
 //chatGPT, 読み込みファイル削除関数
@@ -470,3 +475,6 @@ replayButton.addEventListener('click', () => {
 };
 
 });
+
+
+  
