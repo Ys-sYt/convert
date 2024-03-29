@@ -123,6 +123,7 @@ function removeExistingData(map) {
 let geojson;
 //let totalLength; 
 let newGeoJson;
+let timeDif = [];
 
 
 // ファイルアップロードのためのinput要素のイベントリスナーを設定
@@ -151,7 +152,7 @@ document.getElementById('file-input').addEventListener('change', function(event)
             const coordinates = geojson.geometry.coordinates;
             const timeList = geojson.properties.coordinateProperties.times;
             const heartRate = geojson.properties.coordinateProperties["ns3:TrackPointExtensions"];
-            const timeDif = [];
+            //const timeDif = [];
             //console.log(heartRate);
             //console.log(coordinates);
             
@@ -446,8 +447,8 @@ replayButton.addEventListener('click', () => {
                     ['linear'],
                     ['get', 'heartRate'],
                     //0, '#d7191c',
-                    80, '#c0c0c0',
-                    100, '#1e90ff',
+                    100, '#c0c0c0',
+                    120, '#1e90ff',
                     //10, 'rgb(255, 255, 0)',
                     150, '#ffd700',
                     200, '#9400d3',
@@ -489,7 +490,10 @@ replayButton.addEventListener('click', () => {
             } else {
                 window.clearInterval(timer);
             }
-        }, 100);
+        }, 
+        //再生間隔
+        timeDif[i] * 100
+        );
     }  else {
         replayButton.innerText = 'Replay';
         
