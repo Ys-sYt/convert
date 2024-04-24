@@ -15,13 +15,21 @@
     </head>
     <body style="margin: 0">
         <style>
+            #map {
+            width: 75%;
+            height: 100%; /* 画面の高さいっぱいに表示する場合 */
+            float: left; /* 画面の右側に配置する場合 */
+            }
+
+
             .map-overlay {
                 font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
-                position: absolute;
                 width: 25%;
+/*                 position: absolute;
                 top: 0;
-                left: 0;
-                padding: 10px;
+                left: 0; 
+                padding: 10px;*/
+                float: right;
             }
 
             .map-overlay .map-overlay-inner {
@@ -30,6 +38,7 @@
                 border-radius: 3px;
                 padding: 10px;
                 margin-bottom: 10px;
+                width: 100%;
             }
 
             .map-overlay h2 {
@@ -62,9 +71,12 @@
             content: 'Play';
             }
 
+            .slider{
+                width: 90%;
+            }
         </style>
         
-        <div id="map"></div>
+        <div id="map" class="map"></div>
         <div class="map-overlay top">
             <div class="map-overlay-inner">
                 <div class="overlay">
@@ -79,16 +91,38 @@
 
             <div class="map-overlay-inner">
                 <h2>軌跡の透明度</h2>
-                <input id="sliderLineOpacity" type="range" min="0" max="1" step="0.05" value="0.8"/>
+                <input id="sliderLineOpacity" class = "slider" type="range" min="0" max="1" step="0.05" value="0.8"/>
             </div>
 
             <div class="map-overlay-inner">
                 <h2>軌跡の太さ</h2>
-                <input id="sliderLinewidth" type="range" min="1" max="15" step="0.1" value="3"/>
+                <input id="sliderLinewidth" class = "slider" type="range" min="1" max="15" step="0.1" value="3"/>
             </div>
         </div>
 
-                
+        
+        <!-- <script>
+            //chatGPT, ドラッグされたのを確認済み、main.jsと統合する
+        const dropzone = document.getElementById('map');
+
+        dropzone.addEventListener('dragover', function(e) {
+            e.preventDefault(); // デフォルトのドラッグ＆ドロップ処理を無効にする
+            dropzone.classList.add('dragover'); // ドラッグオーバー時のスタイルを適用
+        });
+
+        dropzone.addEventListener('dragleave', function(e) {
+            dropzone.classList.remove('dragover'); // ドラッグオーバー終了時のスタイルを解除
+        });
+
+        dropzone.addEventListener('drop', function(e) {
+            e.preventDefault(); // デフォルトのドラッグ＆ドロップ処理を無効にする
+            dropzone.classList.remove('dragover'); // ドラッグオーバー時のスタイルを解除
+
+            const file = e.dataTransfer.files[0]; // ドロップされたファイルを取得
+            // ここでファイルを読み込む処理を記述する
+            console.log('ファイルがドロップされました:', file);
+        });
+        </script>    -->
     </body>
     
 </html>
