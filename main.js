@@ -183,7 +183,7 @@ document.getElementById('file-input').addEventListener('change', function(event)
                     return (minutes + ":" + seconds);
                 }
                 var minPerKiloinSixty = tenToSixty(minPerKilo)
-                console.log(minPerKiloinSixty);
+                //console.log(minPerKiloinSixty);
 
                 
                 
