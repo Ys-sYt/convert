@@ -158,7 +158,8 @@ document.getElementById('file-input').addEventListener('change', function(event)
             
             
             //ペース(min/km)の配列を作成
-            const pace = []; 
+            const paceFloat = []; 
+            const paceText = [];
 
             for (let i = 0; i < coordinates.length - 1; i++) {
                 const startPoint = point(coordinates[i]);
@@ -170,10 +171,27 @@ document.getElementById('file-input').addEventListener('change', function(event)
                 const endTime = new Date(timeList[i+1]);
                 const timedif = (endTime - startTime)/1000; //ミリ秒を秒に変換
                 //console.log(timedif);
-                const minPerKilo = (timedif / 60) / dis;
 
+                //speed, min/kilo in 10 decimal
+                const minPerKilo = (timedif / 60) / dis;
                 timeDif.push(timedif);
-                pace.push(minPerKilo);
+                paceFloat.push(minPerKilo)
+
+                function tenToSixty(decimal) {
+                    var minutes = Math.floor(decimal);
+                    var seconds = Math.ceil((decimal - minutes) * 60);
+                    return (minutes + ":" + seconds);
+                }
+                var minPerKiloinSixty = tenToSixty(minPerKilo)
+                console.log(minPerKiloinSixty);
+
+                
+                
+                //小数点三桁
+                //ここで60進数に変更したい
+                paceText.push(parseFloat(minPerKilo.toFixed(3)));
+                
+
             };
 
             //戦略：繰り返し
@@ -193,7 +211,8 @@ document.getElementById('file-input').addEventListener('change', function(event)
                     "type": "Feature",
                     "properties": {
                         "time": timeList[i],
-                        "pace": pace[i], 
+                        "paceNum": paceFloat[i], 
+                        "paceText": paceText[i], 
                         "heartRate": heartRate[i],
                         "timeDif": timeDif[i],          
                     },
@@ -241,7 +260,7 @@ document.getElementById('file-input').addEventListener('change', function(event)
                     'line-color': [
                         'interpolate',
                         ['linear'],
-                        ['get', 'pace'],
+                        ['get', 'paceNum'],
                         //0, '#d7191c',
                         3, 'rgb(0, 128, 0)',
                         10, 'rgb(255, 255, 0)',
@@ -388,7 +407,7 @@ replayButton.addEventListener('click', () => {
                 'line-color': [
                     'interpolate',
                     ['linear'],
-                    ['get', 'pace'],
+                    ['get', 'paceNum'],
                     //0, '#d7191c',
                     3, 'rgb(0, 128, 0)',
                     10, 'rgb(255, 255, 0)',
