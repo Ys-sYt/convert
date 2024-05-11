@@ -44,7 +44,7 @@ const map = new maplibregl.Map({
     container: 'map', // div要素のid
     zoom: 14,
     center: [139.8381, 36.7607],
-    minZoom: 5, // 最小ズーム
+    minZoom: 14, // 最小ズーム
     maxZoom: 18, // 最大ズーム
     maxBounds: [122, 20, 154, 50], // 表示可能な範囲
     bearing: turfbearing,
@@ -362,6 +362,7 @@ replayButton.addEventListener('click', () => {
 
         map.setLayoutProperty('route', 'visibility', 'none');
         map.setLayoutProperty('outline', 'visibility', 'none');
+        
 
         //アニメーション用json作成
         json4animation = {
@@ -455,12 +456,24 @@ replayButton.addEventListener('click', () => {
                 'coordinates': headcoord
             }
         }) */
+        
+        //outline of point
+        map.addLayer({
+            'id': 'pointSkin',
+            'source': 'point',
+            'type': 'circle',
+            'paint': {
+                'circle-radius': 11,
+                'circle-color': '#ffffff',
+            }
+        })
+
         map.addLayer({
             'id': 'point',
             'source': 'point',
             'type': 'circle',
             'paint': {
-                'circle-radius': 10,
+                'circle-radius': 8,
                 'circle-color': [
                     'interpolate',
                     ['linear'],
@@ -473,9 +486,9 @@ replayButton.addEventListener('click', () => {
                     200, '#9400d3',
                 ],
             }
-        })
+        });
 
-        map.jumpTo({'center': json4animation.features[0].geometry.coordinates[1], 'zoom': 15});
+        map.jumpTo({'center': json4animation.features[0].geometry.coordinates[1], 'zoom': 16});
         map.setPitch(0);
         //console.log(headcoord);
 
@@ -483,13 +496,14 @@ replayButton.addEventListener('click', () => {
         timer = window.setInterval(() => {
             if (i < newGeoJson.features.length) {
                 //データ更新
+                //点
+                let newpointdata = pointOnCircle(i);
+                //console.log(newpointdata);
                 //ルート
                 json4animation.features.push(newGeoJson.features[i]);
                 //アウトライン
                 outline4animation.geometry.coordinates.push(geojson.geometry.coordinates[i]);
-                //点
-                let newpointdata = pointOnCircle(i);
-                //console.log(newpointdata);
+
 
                 //描画
                 map.getSource('point').setData(newpointdata);
